@@ -1,0 +1,21 @@
+{
+  "name": "juzt-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "juzt-cli": "./src/juzt-cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.3",
+  "dependencies": {
+    "commander": "^14.0.1",
+    "inquirer": "^12.10.0",
+    "slugify": "^1.6.6"
+  }
+}
