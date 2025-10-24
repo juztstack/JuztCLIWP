@@ -7,6 +7,8 @@ const configPath = path.join(process.cwd(), "juzt.config.js");
 const wpContentPath = path.join(process.cwd(), "wp-content");
 const wpConfigPath = path.join(process.cwd(), "wp-config.php");
 const dockerfilePath = path.join(process.cwd(), "Dockerfile");
+const muPluginDir = path.join(wpContentPath, "mu-plugins");
+const remoteMediaPluginPath = path.join(muPluginDir, "serve-remote-media.php");
 
 function checkDockerImage(imageName) {
   try {
@@ -69,6 +71,36 @@ require_once(ABSPATH . 'wp-settings.php');
   console.log("✅ wp-config.php generado");
 }
 
+function generateRemoteMediaPlugin(config) {
+  const shouldServe = config.serveRemoteMedia !== false;
+  const remoteUrl = config.proxy?.uploads;
+
+  if (!shouldServe || !remoteUrl) {
+    console.log("🚫 Plugin de medios remotos desactivado por configuración.");
+    return;
+  }
+
+  if (!fs.existsSync(muPluginDir)) {
+    fs.mkdirSync(muPluginDir, { recursive: true });
+  }
+
+  const pluginContent = `<?php
+/**
+ * Plugin para servir medios desde dominio remoto
+ */
+add_filter('wp_get_attachment_url', function($url) {
+  return str_replace(
+    home_url('/wp-content/uploads'),
+    '${remoteUrl}',
+    $url
+  );
+});
+`;
+
+  fs.writeFileSync(remoteMediaPluginPath, pluginContent);
+  console.log("🌐 Plugin para servir medios remotos generado en mu-plugins");
+}
+
 module.exports = async function () {
   if (!fs.existsSync(configPath)) {
     console.log("⚙️ No se encontró juzt.config.js. Ejecutando init...");
@@ -90,6 +122,7 @@ module.exports = async function () {
   }
 
   generateWpConfig(config);
+  generateRemoteMediaPlugin(config);
 
   if (checkDockerContainer(containerName)) {
     console.log(`⚠️ El contenedor ${containerName} ya existe. Usa 'juzt-cli down' para eliminarlo.`);
