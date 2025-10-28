@@ -1,4 +1,3 @@
-const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const slugify = require("slugify");
@@ -13,23 +12,26 @@ module.exports = async function () {
   }
 
   const config = require(configPath);
-  const containerName = `juzt-wp-${slugify(config.name, { lower: true })}-${config.server.port}`;
+  const manager = config.containerManager || "docker";
+  const container = require(`../helpers/${manager}.js`);
 
-  try {
-    console.log(`🛑 Deteniendo contenedor ${containerName}...`);
-    execSync(`docker stop ${containerName}`, { stdio: "ignore" });
-  } catch {
-    console.log("⚠️ El contenedor no estaba corriendo.");
+  const wpContainerName = `juzt-wp-${slugify(config.name, { lower: true })}-${config.server.port}`;
+  const dbContainerName = `juzt-db-${slugify(config.name, { lower: true })}-${config.server.port}`;
+
+  console.log(`🛑 Deteniendo contenedor ${wpContainerName}...`);
+  container.stopContainer(wpContainerName);
+
+  console.log(`🧨 Eliminando contenedor ${wpContainerName}...`);
+  container.removeContainer(wpContainerName);
+
+  if (config.useLocalDatabase) {
+    console.log(`🛑 Deteniendo contenedor DB ${dbContainerName}...`);
+    container.stopContainer(dbContainerName);
+
+    console.log(`🧨 Eliminando contenedor DB ${dbContainerName}...`);
+    container.removeContainer(dbContainerName);
   }
 
-  try {
-    console.log(`🧨 Eliminando contenedor ${containerName}...`);
-    execSync(`docker rm ${containerName}`, { stdio: "ignore" });
-  } catch {
-    console.log("⚠️ El contenedor ya había sido eliminado.");
-  }
-
-  // Opcional: eliminar wp-config.php
   if (fs.existsSync(wpConfigPath)) {
     fs.unlinkSync(wpConfigPath);
     console.log("🧹 Archivo wp-config.php eliminado.");

@@ -30,6 +30,37 @@ async function runInit() {
       validate: input => /^\d+$/.test(input) ? true : "Debe ser un número"
     },
     {
+      type: "list",
+      name: "containerManager",
+      message: "¿Qué gestor de contenedores deseas usar?",
+      choices: ["docker", "podman"],
+      default: "docker"
+    },
+    {
+      type: "confirm",
+      name: "useLocalDatabase",
+      message: "¿Deseas usar una base de datos local en contenedor?",
+      default: true
+    },
+    {
+      name: "localDbImage",
+      message: "Imagen de base de datos local:",
+      default: "mysql:5.7",
+      when: answers => answers.useLocalDatabase
+    },
+    {
+      name: "localDbPassword",
+      message: "Contraseña root de la base local:",
+      default: "root",
+      when: answers => answers.useLocalDatabase
+    },
+    {
+      name: "localDbPort",
+      message: "Puerto interno del contenedor DB:",
+      default: 3306,
+      when: answers => answers.useLocalDatabase
+    },
+    {
       name: "db_host",
       message: "Host de la base de datos remota:"
     },
@@ -53,12 +84,53 @@ async function runInit() {
     {
       name: "proxy_uploads",
       message: "URL de proxy para uploads (opcional):"
+    },
+    {
+      type: "confirm",
+      name: "useSSH",
+      message: "¿Deseas configurar conexión SSH?",
+      default: false
+    },
+    {
+      name: "ssh_host",
+      message: "Host SSH:",
+      when: answers => answers.useSSH
+    },
+    {
+      name: "ssh_port",
+      message: "Puerto SSH:",
+      default: 22,
+      when: answers => answers.useSSH
+    },
+    {
+      name: "ssh_user",
+      message: "Usuario SSH:",
+      when: answers => answers.useSSH
+    },
+    {
+      name: "ssh_password",
+      message: "Contraseña SSH:",
+      when: answers => answers.useSSH
+    },
+    {
+      name: "ssh_key",
+      message: "Ruta al archivo de clave privada (opcional):",
+      when: answers => answers.useSSH
     }
   ]);
 
   const config = {
     name: answers.name,
     wp_version: answers.wp_version,
+    containerManager: answers.containerManager || "docker",
+    useLocalDatabase: answers.useLocalDatabase,
+    localDatabase: answers.useLocalDatabase
+      ? {
+          image: answers.localDbImage,
+          rootPassword: answers.localDbPassword,
+          port: parseInt(answers.localDbPort)
+        }
+      : undefined,
     database: {
       host: answers.db_host,
       name: answers.db_name,
@@ -71,6 +143,15 @@ async function runInit() {
     },
     proxy: answers.proxy_uploads
       ? { uploads: answers.proxy_uploads }
+      : undefined,
+    ssh: answers.useSSH
+      ? {
+          host: answers.ssh_host,
+          port: parseInt(answers.ssh_port),
+          user: answers.ssh_user,
+          password: answers.ssh_password,
+          privateKeyPath: answers.ssh_key || null
+        }
       : undefined
   };
 

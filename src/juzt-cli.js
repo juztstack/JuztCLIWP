@@ -22,4 +22,9 @@ program
     .description("Cancel dev server")
     .action(runDown);
 
+program
+  .command("db:pull")
+  .description("Sincroniza la base de datos remota con la local vía SSH")
+  .action(require("./command/db-pull"));
+
 program.parse(process.argv);
