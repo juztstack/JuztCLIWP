@@ -29,10 +29,16 @@ RUN apt-get update && apt-get install -y \\
 }
 
 function generateWpConfig(config, dbHost) {
+  const isLocal = config.useLocalDatabase;
+
+  const dbName = isLocal ? config.database.name : config.database.name;
+  const dbUser = isLocal ? "root" : config.database.user;
+  const dbPassword = isLocal ? config.localDatabase.rootPassword : config.database.password;
+
   const content = `<?php
-define('DB_NAME', '${config.database.name}');
-define('DB_USER', '${config.database.user}');
-define('DB_PASSWORD', '${config.database.password}');
+define('DB_NAME', '${dbName}');
+define('DB_USER', '${dbUser}');
+define('DB_PASSWORD', '${dbPassword}');
 define('DB_HOST', '${dbHost}');
 $table_prefix = '${config.database.tablePrefix}';
 define('WP_DEBUG', true);
@@ -45,8 +51,9 @@ require_once(ABSPATH . 'wp-settings.php');
 `;
 
   fs.writeFileSync(wpConfigPath, content);
-  console.log("✅ wp-config.php generado");
+  console.log("✅ wp-config.php generado con credenciales " + (isLocal ? "locales" : "remotas"));
 }
+
 
 function generateRemoteMediaPlugin(config) {
   const shouldServe = config.serveRemoteMedia !== false;

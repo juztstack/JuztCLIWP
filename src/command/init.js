@@ -116,6 +116,11 @@ async function runInit() {
       name: "ssh_key",
       message: "Ruta al archivo de clave privada (opcional):",
       when: answers => answers.useSSH
+    },
+    {
+      "name": "remote_wp_path",
+      "message": "Ruta al WordPress remoto (ej. /var/www/html):",
+      "when": answers => answers.useSSH
     }
   ]);
 
@@ -150,7 +155,8 @@ async function runInit() {
           port: parseInt(answers.ssh_port),
           user: answers.ssh_user,
           password: answers.ssh_password,
-          privateKeyPath: answers.ssh_key || null
+          privateKeyPath: answers.ssh_key || null,
+          remoteWpPath: answers.remote_wp_path || null
         }
       : undefined
   };

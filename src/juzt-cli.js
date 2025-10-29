@@ -27,4 +27,11 @@ program
   .description("Sincroniza la base de datos remota con la local vía SSH")
   .action(require("./command/db-pull"));
 
+program
+  .command("uploads:pull")
+  .description("Sincroniza una carpeta remota dentro de WordPress")
+  .requiredOption("--path <path>", "Ruta relativa dentro de WordPress (ej: wp-content/plugins/)")
+  .option("--method <method>", "Método de sincronización: rsync o scp", "rsync")
+  .action((options) => require("./command/uploads-pull")(options));
+
 program.parse(process.argv);
