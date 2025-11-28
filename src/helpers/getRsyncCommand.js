@@ -19,7 +19,7 @@ function getRsyncCommand({ ssh, remotePath, localPath }) {
   })();
 
   if (!isWindows || hasSystemRsync) {
-    console.log("📦 Usando rsync del sistema");
+    console.log("📦 Using system rsync");
     return [
       "rsync -avz",
       `-e "ssh -i \\"${ssh.privateKeyPath}\\" -p ${ssh.port}"`,
@@ -28,7 +28,7 @@ function getRsyncCommand({ ssh, remotePath, localPath }) {
     ].join(" ");
   }
 
-  console.log("📦 Usando rsync embebido con PATH temporal");
+  console.log("📦 Using embedded rsync with temporary PATH");
 
   return [
     `"${rsyncEmbedded}" -avz`,

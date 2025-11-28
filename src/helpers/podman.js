@@ -19,7 +19,7 @@ function checkContainerExists(containerName) {
 }
 
 function buildImage() {
-  console.log("📦 Construyendo imagen personalizada con Podman...");
+  console.log("📦 Building custom image with Podman...");
   execSync(`podman build -t juzt-wordpress:dev -f Dockerfile .`, { stdio: "inherit" });
 }
 
@@ -33,7 +33,7 @@ function runContainer(config) {
     `-v ${process.cwd()}/wp-config.php:/var/www/html/wp-config.php`,
     `juzt-wordpress:dev`
   ].join(" ");
-  console.log("🚀 Levantando entorno con Podman...");
+  console.log("🚀 Starting environment with Podman...");
   execSync(cmd, { stdio: "inherit" });
 }
 
@@ -41,7 +41,7 @@ function stopContainer(containerName) {
   try {
     execSync(`podman stop ${containerName}`, { stdio: "ignore" });
   } catch {
-    console.log("⚠️ El contenedor no estaba corriendo.");
+    console.log("⚠️ The container was not running.");
   }
 }
 
@@ -49,7 +49,7 @@ function removeContainer(containerName) {
   try {
     execSync(`podman rm ${containerName}`, { stdio: "ignore" });
   } catch {
-    console.log("⚠️ El contenedor ya había sido eliminado.");
+    console.log("⚠️ The container had already been removed.");
   }
 }
 

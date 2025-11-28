@@ -19,7 +19,7 @@ function checkContainerExists(containerName) {
 }
 
 function buildImage() {
-  console.log("📦 Construyendo imagen personalizada con Docker...");
+  console.log("📦 Building custom image with Docker...");
   execSync(`docker build -t juzt-wordpress:dev -f Dockerfile .`, { stdio: "inherit" });
 }
 
@@ -33,7 +33,7 @@ function runContainer(config) {
     `-v ${process.cwd()}/wp-config.php:/var/www/html/wp-config.php`,
     `juzt-wordpress:dev`
   ].join(" ");
-  console.log("🚀 Levantando entorno con Docker...");
+  console.log("🚀 Starting environment with Docker...");
   execSync(cmd, { stdio: "inherit" });
 }
 
@@ -41,7 +41,7 @@ function stopContainer(containerName) {
   try {
     execSync(`docker stop ${containerName}`, { stdio: "ignore" });
   } catch {
-    console.log("⚠️ El contenedor no estaba corriendo.");
+    console.log("⚠️ The container was not running.");
   }
 }
 
@@ -49,7 +49,7 @@ function removeContainer(containerName) {
   try {
     execSync(`docker rm ${containerName}`, { stdio: "ignore" });
   } catch {
-    console.log("⚠️ El contenedor ya había sido eliminado.");
+    console.log("⚠️ The container had already been removed.");
   }
 }
 

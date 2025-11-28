@@ -6,7 +6,7 @@ const { getSyncCommand } = require("../helpers/getSyncCommand");
 module.exports = function ({ path: relativePath, method }) {
   const configPath = path.join(process.cwd(), "juzt.config.js");
   if (!fs.existsSync(configPath)) {
-    console.error("❌ No se encontró juzt.config.js.");
+    console.error("❌ juzt.config.js not found.");
     process.exit(1);
   }
 
@@ -15,13 +15,13 @@ module.exports = function ({ path: relativePath, method }) {
   const remoteBase = config.remoteWpPath;
 
   if (!ssh || !remoteBase) {
-    console.error("🚫 Falta configuración SSH o remoteWpPath en juzt.config.js.");
+    console.error("🚫 Missing SSH configuration or remoteWpPath in juzt.config.js.");
     process.exit(1);
   }
 
   const validMethods = ["rsync", "scp"];
   if (!validMethods.includes(method)) {
-    console.error(`❌ Método inválido: ${method}. Usa --method rsync o --method scp`);
+    console.error(`❌ Invalid method: ${method}. Use --method rsync or --method scp`);
     process.exit(1);
   }
 
@@ -32,7 +32,7 @@ module.exports = function ({ path: relativePath, method }) {
   const localPath = path.join(process.cwd(), relativePath);
   if (!fs.existsSync(localPath)) {
     fs.mkdirSync(localPath, { recursive: true });
-    console.log(`📁 Carpeta local creada: ${localPath}`);
+    console.log(`📁 Local folder created: ${localPath}`);
   }
 
   const syncCmd = getSyncCommand({
@@ -42,7 +42,7 @@ module.exports = function ({ path: relativePath, method }) {
     method
   });
 
-  console.log(`🔄 Ejecutando sincronización de: ${relativePath}`);
+  console.log(`🔄 Running synchronization of: ${relativePath}`);
   try {
     const env = {
       ...process.env,
@@ -50,8 +50,8 @@ module.exports = function ({ path: relativePath, method }) {
     };
 
     execSync(syncCmd, { stdio: "inherit", shell: true, env });
-    console.log("✅ Sincronización completada.");
+    console.log("✅ Synchronization completed.");
   } catch (err) {
-    console.error("❌ Error al sincronizar:", err.message);
+    console.error("❌ Error synchronizing:", err.message);
   }
 };

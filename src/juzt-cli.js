@@ -9,7 +9,7 @@ const runDown = require("./command/down");
 
 program
     .command("init")
-    .description("Genera el archivo juzt.config.js")
+    .description("Generate juzt.config.js configuration file")
     .action(runInit);
 
 program
@@ -24,14 +24,14 @@ program
 
 program
   .command("db:pull")
-  .description("Sincroniza la base de datos remota con la local vía SSH")
+  .description("Sync remote database to local via SSH")
   .action(require("./command/db-pull"));
 
 program
   .command("uploads:pull")
-  .description("Sincroniza una carpeta remota dentro de WordPress")
-  .requiredOption("--path <path>", "Ruta relativa dentro de WordPress (ej: wp-content/plugins/)")
-  .option("--method <method>", "Método de sincronización: rsync o scp", "rsync")
+  .description("Sync a remote folder within WordPress")
+  .requiredOption("--path <path>", "Relative path inside WordPress (e.g., wp-content/plugins/)")
+  .option("--method <method>", "Sync method: rsync or scp", "rsync")
   .action((options) => require("./command/uploads-pull")(options));
 
 program.parse(process.argv);

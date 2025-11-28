@@ -8,19 +8,19 @@ const dumpPath = path.join(process.cwd(), "dump.sql");
 
 module.exports = async function () {
   if (!fs.existsSync(configPath)) {
-    console.error("❌ No se encontró juzt.config.js.");
+    console.error("❌ juzt.config.js not found.");
     process.exit(1);
   }
 
   const config = require(configPath);
 
   if (!config.useLocalDatabase) {
-    console.error("🚫 Este comando requiere una base de datos local activa.");
+    console.error("🚫 This command requires an active local database.");
     return;
   }
 
   if (!config.ssh || !config.ssh.host || !config.ssh.user) {
-    console.error("🚫 La configuración SSH está incompleta.");
+    console.error("🚫 SSH configuration is incomplete.");
     return;
   }
 
@@ -30,9 +30,9 @@ module.exports = async function () {
   const dbContainerName = `juzt-db-${slugify(config.name, { lower: true })}-${config.server.port}`;
   const container = require(`../helpers/${manager}.js`);
 
-  // ✅ Verificar que el contenedor DB esté corriendo
+  // ✅ Verify DB container is running
   if (!container.checkContainerExists(dbContainerName)) {
-    console.error(`❌ El contenedor de base de datos ${dbContainerName} no está corriendo.`);
+    console.error(`❌ Database container ${dbContainerName} is not running.`);
     return;
   }
 
@@ -47,34 +47,34 @@ module.exports = async function () {
   if (ssh.port) sshCmd.splice(1, 0, `-p ${ssh.port}`);
   if (ssh.privateKeyPath) sshCmd.splice(1, 0, `-i ${ssh.privateKeyPath}`);
 
-  console.log("📡 Conectando vía SSH y extrayendo base de datos remota...");
+  console.log("📡 Connecting via SSH and extracting remote database...");
   try {
     const dump = execSync(sshCmd.join(" "), { encoding: "utf8" });
     fs.writeFileSync(dumpPath, dump);
-    console.log("✅ Dump recibido y guardado como dump.sql");
+    console.log("✅ Dump received and saved as dump.sql");
   } catch (err) {
-    console.error("❌ Error al ejecutar mysqldump remoto:", err.message);
+    console.error("❌ Error executing remote mysqldump:", err.message);
     return;
   }
 
   // 📥 Importar en contenedor local
   try {
-    console.log("📦 Copiando dump al contenedor...");
+    console.log("📦 Copying dump to container...");
     execSync(`${manager} cp ${dumpPath} ${dbContainerName}:/dump.sql`);
 
-    console.log("📥 Importando dump en contenedor local...");
+    console.log("📥 Importing dump into local container...");
     execSync(`${manager} exec ${dbContainerName} sh -c "mysql -u root -p${config.localDatabase.rootPassword} ${db.name} < /dump.sql"`);
 
-    console.log("✅ Base de datos sincronizada con éxito.");
+    console.log("✅ Database synchronized successfully.");
   } catch (err) {
-    console.error("❌ Error al importar en contenedor local:", err.message);
+    console.error("❌ Error importing into local container:", err.message);
   }
 
   // 🧹 Limpieza
   try {
     fs.unlinkSync(dumpPath);
-    console.log("🧹 Dump local eliminado.");
+    console.log("🧹 Local dump removed.");
   } catch {
-    console.warn("⚠️ No se pudo eliminar el dump local.");
+    console.warn("⚠️ Could not remove local dump.");
   }
 };

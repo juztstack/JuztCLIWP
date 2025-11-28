@@ -37,8 +37,8 @@ function getSyncCommand({ ssh, remotePath, localPath, method }) {
 
     console.log(
       hasSystemRsync && !isWindows
-        ? "📦 Usando rsync del sistema"
-        : "📦 Usando rsync embebido con PATH temporal"
+        ? "📦 Using system rsync"
+        : "📦 Using embedded rsync with temporary PATH"
     );
 
     return [
@@ -50,7 +50,7 @@ function getSyncCommand({ ssh, remotePath, localPath, method }) {
   }
 
   // Fallback: SCP
-  console.log("📦 Usando SCP como fallback");
+  console.log("📦 Using SCP as fallback");
   return [
     `"${scpEmbedded}"`,
     "-r",

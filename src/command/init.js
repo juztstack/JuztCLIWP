@@ -10,116 +10,116 @@ const configPath = path.join(process.cwd(), "juzt.config.js");
 const prompt = inquirer.default?.prompt || inquirer.prompt;
 
 async function runInit() {
-  console.log("🛠️ Bienvenido a Juzt-CLI 1.1.0 Init");
+  console.log("🛠️ Welcome to Juzt-CLI 1.1.0 Init");
 
   const answers = await prompt([
     {
       name: "name",
-      message: "Nombre del proyecto:",
-      validate: input => input ? true : "Este campo es obligatorio"
+      message: "Project name:",
+      validate: input => input ? true : "This field is required"
     },
     {
       name: "wp_version",
-      message: "Versión de WordPress:",
+      message: "WordPress version:",
       default: "6.8.3"
     },
     {
       name: "port",
-      message: "Puerto local:",
+      message: "Local port:",
       default: 8080,
-      validate: input => /^\d+$/.test(input) ? true : "Debe ser un número"
+      validate: input => /^\d+$/.test(input) ? true : "Must be a number"
     },
     {
       type: "list",
       name: "containerManager",
-      message: "¿Qué gestor de contenedores deseas usar?",
+      message: "Which container manager do you want to use?",
       choices: ["docker", "podman"],
       default: "docker"
     },
     {
       type: "confirm",
       name: "useLocalDatabase",
-      message: "¿Deseas usar una base de datos local en contenedor?",
+      message: "Do you want to use a local database in a container?",
       default: true
     },
     {
       name: "localDbImage",
-      message: "Imagen de base de datos local:",
+      message: "Local database image:",
       default: "mysql:5.7",
       when: answers => answers.useLocalDatabase
     },
     {
       name: "localDbPassword",
-      message: "Contraseña root de la base local:",
+      message: "Local DB root password:",
       default: "root",
       when: answers => answers.useLocalDatabase
     },
     {
       name: "localDbPort",
-      message: "Puerto interno del contenedor DB:",
+      message: "DB container internal port:",
       default: 3306,
       when: answers => answers.useLocalDatabase
     },
     {
       name: "db_host",
-      message: "Host de la base de datos remota:"
+      message: "Remote database host:"
     },
     {
       name: "db_name",
-      message: "Nombre de la base de datos:"
+      message: "Database name:"
     },
     {
       name: "db_user",
-      message: "Usuario de la base de datos:"
+      message: "Database user:"
     },
     {
       name: "db_password",
-      message: "Contraseña de la base de datos:"
+      message: "Database password:"
     },
     {
       name: "tablePrefix",
-      message: "Prefijo de tablas:",
+      message: "Table prefix:",
       default: "wp_"
     },
     {
       name: "proxy_uploads",
-      message: "URL de proxy para uploads (opcional):"
+      message: "Proxy URL for uploads (optional):"
     },
     {
       type: "confirm",
       name: "useSSH",
-      message: "¿Deseas configurar conexión SSH?",
+      message: "Do you want to configure SSH connection?",
       default: false
     },
     {
       name: "ssh_host",
-      message: "Host SSH:",
+      message: "SSH host:",
       when: answers => answers.useSSH
     },
     {
       name: "ssh_port",
-      message: "Puerto SSH:",
+      message: "SSH port:",
       default: 22,
       when: answers => answers.useSSH
     },
     {
       name: "ssh_user",
-      message: "Usuario SSH:",
+      message: "SSH user:",
       when: answers => answers.useSSH
     },
     {
       name: "ssh_password",
-      message: "Contraseña SSH:",
+      message: "SSH password:",
       when: answers => answers.useSSH
     },
     {
       name: "ssh_key",
-      message: "Ruta al archivo de clave privada (opcional):",
+      message: "Path to private key file (optional):",
       when: answers => answers.useSSH
     },
     {
       "name": "remote_wp_path",
-      "message": "Ruta al WordPress remoto (ej. /var/www/html):",
+      "message": "Remote WordPress path (e.g., /var/www/html):",
       "when": answers => answers.useSSH
     }
   ]);
@@ -164,7 +164,7 @@ async function runInit() {
   const configContent = `module.exports = ${JSON.stringify(config, null, 2)};\n`;
 
   fs.writeFileSync(configPath, configContent);
-  console.log(`✅ Archivo de configuración generado en ${configPath}`);
+  console.log(`✅ Configuration file generated at ${configPath}`);
 }
 
 module.exports = runInit;

@@ -13,7 +13,7 @@ const remoteMediaPluginPath = path.join(muPluginDir, "serve-remote-media.php");
 function ensureDockerfileExists(wpVersion) {
   if (fs.existsSync(dockerfilePath)) return;
 
-  console.log("🧪 No se encontró Dockerfile. Generando uno...");
+  console.log("🧪 Dockerfile not found. Generating one...");
 
   const dockerfileContent = `FROM wordpress:${wpVersion}
 
@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \\
 `;
 
   fs.writeFileSync(dockerfilePath, dockerfileContent);
-  console.log("✅ Dockerfile generado");
+  console.log("✅ Dockerfile generated");
 }
 
 function generateWpConfig(config, dbHost) {
@@ -60,7 +60,7 @@ function generateRemoteMediaPlugin(config) {
   const remoteUrl = config.proxy?.uploads;
 
   if (!shouldServe || !remoteUrl) {
-    console.log("🚫 Plugin de medios remotos desactivado por configuración.");
+    console.log("🚫 Remote media plugin disabled by configuration.");
     return;
   }
 
@@ -82,12 +82,12 @@ add_filter('wp_get_attachment_url', function($url) {
 `;
 
   fs.writeFileSync(remoteMediaPluginPath, pluginContent);
-  console.log("🌐 Plugin para servir medios remotos generado en mu-plugins");
+  console.log("🌐 Remote media serving plugin generated in mu-plugins");
 }
 
 module.exports = async function () {
   if (!fs.existsSync(configPath)) {
-    console.log("⚙️ No se encontró juzt.config.js. Ejecutando init...");
+    console.log("⚙️ juzt.config.js not found. Running init...");
     await require("./init")();
   }
 
@@ -102,7 +102,7 @@ module.exports = async function () {
   try {
     execSync(`${manager} network inspect juzt-net`, { stdio: "ignore" });
   } catch {
-    console.log("🌐 Creando red juzt-net...");
+    console.log("🌐 Creating network juzt-net...");
     execSync(`${manager} network create juzt-net`);
   }
 
@@ -113,14 +113,14 @@ module.exports = async function () {
   }
 
   if (!fs.existsSync(wpContentPath)) {
-    console.error("❌ La carpeta wp-content no existe.");
+    console.error("❌ wp-content folder does not exist.");
     process.exit(1);
   }
 
   // 🧱 Levantar contenedor DB si está activado
   if (config.useLocalDatabase) {
     if (!container.checkContainerExists(dbContainerName)) {
-      console.log("🗄️ Levantando contenedor de base de datos local...");
+      console.log("🗄️ Starting local database container...");
       const dbCmd = [
         `${manager} run -d`,
         `--name ${dbContainerName}`,
@@ -133,9 +133,9 @@ module.exports = async function () {
         `${config.localDatabase.image}`
       ].join(" ");
       execSync(dbCmd, { stdio: "inherit" });
-      console.log(`✅ Contenedor DB ${dbContainerName} levantado`);
+      console.log(`✅ DB container ${dbContainerName} started`);
     } else {
-      console.log(`⚠️ El contenedor DB ${dbContainerName} ya existe.`);
+      console.log(`⚠️ DB container ${dbContainerName} already exists.`);
     }
   }
 
@@ -145,7 +145,7 @@ module.exports = async function () {
   generateRemoteMediaPlugin(config);
 
   if (container.checkContainerExists(wpContainerName)) {
-    console.log(`⚠️ El contenedor ${wpContainerName} ya existe. Usa 'juzt-cli down' para eliminarlo.`);
+    console.log(`⚠️ Container ${wpContainerName} already exists. Use 'juzt-cli down' to remove it.`);
     return;
   }
 
@@ -159,7 +159,7 @@ module.exports = async function () {
     `juzt-wordpress:dev`
   ].join(" ");
 
-  console.log("🚀 Levantando entorno WordPress...");
+  console.log("🚀 Starting WordPress environment...");
   execSync(wpCmd, { stdio: "inherit" });
-  console.log(`✅ Contenedor ${wpContainerName} levantado en http://localhost:${config.server.port}`);
+  console.log(`✅ Container ${wpContainerName} started at http://localhost:${config.server.port}`);
 };

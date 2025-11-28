@@ -7,7 +7,7 @@ const wpConfigPath = path.join(process.cwd(), "wp-config.php");
 
 module.exports = async function () {
   if (!fs.existsSync(configPath)) {
-    console.error("❌ No se encontró juzt.config.js en el directorio actual.");
+    console.error("❌ juzt.config.js not found in the current directory.");
     process.exit(1);
   }
 
@@ -18,24 +18,24 @@ module.exports = async function () {
   const wpContainerName = `juzt-wp-${slugify(config.name, { lower: true })}-${config.server.port}`;
   const dbContainerName = `juzt-db-${slugify(config.name, { lower: true })}-${config.server.port}`;
 
-  console.log(`🛑 Deteniendo contenedor ${wpContainerName}...`);
+  console.log(`🛑 Stopping container ${wpContainerName}...`);
   container.stopContainer(wpContainerName);
 
-  console.log(`🧨 Eliminando contenedor ${wpContainerName}...`);
+  console.log(`🧨 Removing container ${wpContainerName}...`);
   container.removeContainer(wpContainerName);
 
   if (config.useLocalDatabase) {
-    console.log(`🛑 Deteniendo contenedor DB ${dbContainerName}...`);
+    console.log(`🛑 Stopping DB container ${dbContainerName}...`);
     container.stopContainer(dbContainerName);
 
-    console.log(`🧨 Eliminando contenedor DB ${dbContainerName}...`);
+    console.log(`🧨 Removing DB container ${dbContainerName}...`);
     container.removeContainer(dbContainerName);
   }
 
   if (fs.existsSync(wpConfigPath)) {
     fs.unlinkSync(wpConfigPath);
-    console.log("🧹 Archivo wp-config.php eliminado.");
+    console.log("🧹 File wp-config.php removed.");
   }
 
-  console.log("✅ Entorno limpio.");
+  console.log("✅ Environment cleaned.");
 };
