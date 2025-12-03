@@ -19,13 +19,13 @@ Since this CLI is not published on the public npm registry, you can install it g
 ### Using pnpm (Recommended)
 
 ```bash
-pnpm install -g github:<your-github-username>/juzt-cli-wp
+pnpm install -g github:juztstack/JuztCLIWP
 ````
 
 ### Using npm
 
 ```bash
-npm install -g github:<your-github-username>/juzt-cli-wp
+npm install -g github:juztstack/JuztCLIWP
 ```
 
 Replace `<your-github-username>/juzt-cli-wp` with the actual path to your repository.
@@ -34,7 +34,7 @@ Replace `<your-github-username>/juzt-cli-wp` with the actual path to your reposi
 
 The main command for the CLI is `juzt-cli-wp`.
 
-### 1\. Initialize the Project
+### 1. Initialize the Project
 
 Start by running the `init` command in your project root to create the configuration file:
 
@@ -44,7 +44,7 @@ juzt-cli-wp init
 
 This will guide you through an interactive setup to create the `juzt.config.js` file, defining your local and remote (SSH/DB) settings.
 
-### 2\. Start the Environment
+### 2. Start the Environment
 
 Use the `up` command to build the necessary Docker/Podman image (if not already built) and start your local WordPress and Database containers:
 
@@ -52,7 +52,7 @@ Use the `up` command to build the necessary Docker/Podman image (if not already 
 juzt-cli-wp up
 ```
 
-### 3\. Synchronize Database (Pull)
+### 3. Synchronize Database (Pull)
 
 Pull the remote database from your specified SSH host and import it into your local containerized database.
 
@@ -62,7 +62,7 @@ juzt-cli-wp db:pull
 
 > **Note:** This command requires `useLocalDatabase` to be set to `true` and a complete SSH configuration in your `juzt.config.js`.
 
-### 4\. Synchronize Files (Pull)
+### 4. Synchronize Files (Pull)
 
 Pull a specific directory from the remote WordPress installation to your local machine. This is typically used for `wp-content/uploads` or large plugin directories.
 
@@ -74,7 +74,7 @@ juzt-cli-wp uploads:pull --path wp-content/uploads/
 juzt-cli-wp uploads:pull --path wp-content/plugins/my-plugin --method scp
 ```
 
-### 5\. Stop and Clean Up
+### 5. Stop and Clean Up
 
 Use the `down` command to stop and remove the running WordPress and Database containers, and delete the generated `wp-config.php` file:
 
