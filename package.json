@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "bin": {
-    "juzt-cli": "./src/juzt-cli.js"
+    "juzt-cli-wp": "./src/juzt-cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
