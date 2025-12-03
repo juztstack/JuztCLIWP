@@ -10,7 +10,7 @@ const configPath = path.join(process.cwd(), "juzt.config.js");
 const prompt = inquirer.default?.prompt || inquirer.prompt;
 
 async function runInit() {
-  console.log("🛠️ Welcome to Juzt-CLI 1.1.0 Init");
+  console.log("🛠️ Welcome to Juzt-CLI-WP 1.2.0 Init");
 
   const answers = await prompt([
     {
