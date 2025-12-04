@@ -19,10 +19,10 @@ module.exports = async function () {
     return;
   }
 
-  if (!config.ssh || !config.ssh.host || !config.ssh.user) {
+  /*if (!config.ssh || !config.ssh.host || !config.ssh.user) {
     console.error("🚫 SSH configuration is incomplete.");
     return;
-  }
+  }*/
 
   const db = config.database;
   const ssh = config.ssh;

@@ -29,8 +29,8 @@ function runContainer(config) {
     "podman run -d",
     `--name ${containerName}`,
     `-p ${config.server.port}:80`,
-    `-v ${process.cwd()}/wp-content:/var/www/html/wp-content`,
-    `-v ${process.cwd()}/wp-config.php:/var/www/html/wp-config.php`,
+    `-v "${process.cwd()}/wp-content:/var/www/html/wp-content"`,
+    `-v "${process.cwd()}/wp-config.php:/var/www/html/wp-config.php"`,
     `juzt-wordpress:dev`
   ].join(" ");
   console.log("🚀 Starting environment with Podman...");

@@ -29,9 +29,11 @@ RUN apt-get update && apt-get install -y \\
 }
 
 function generateWpConfig(config, dbHost) {
-  const dbName = config.database.name;
-  const dbUser = config.database.user;
-  const dbPassword = config.database.password;
+  const isLocal = config.useLocalDatabase;
+
+  const dbName = isLocal ? config.database.name : config.database.name;
+  const dbUser = isLocal ? "root" : config.database.user;
+  const dbPassword = isLocal ? config.localDatabase.rootPassword : config.database.password;
 
   const content = `<?php
 define('DB_NAME', '${dbName}');
@@ -42,16 +44,22 @@ $table_prefix = '${config.database.tablePrefix}';
 define('WP_DEBUG', true);
 define('WP_HOME', 'http://localhost:${config.server.port}');
 define('WP_SITEURL', 'http://localhost:${config.server.port}');
+define('FORCE_SSL_ADMIN', false);
+define('COOKIE_DOMAIN', false);
 if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
 require_once(ABSPATH . 'wp-settings.php');
 `;
+
   fs.writeFileSync(wpConfigPath, content);
-  console.log("✅ wp-config.php generado apuntando a DB host:", dbHost);
+  console.log("✅ wp-config.php generado con credenciales " + (isLocal ? "locales" : "remotas"));
 }
 
+
 function generateRemoteMediaPlugin(config) {
+  const shouldServe = config.serveRemoteMedia !== false;
   const remoteUrl = config.proxy?.uploads;
-  if (!remoteUrl) {
+
+  if (!shouldServe || !remoteUrl) {
     console.log("🚫 Remote media plugin disabled by configuration.");
     return;
   }
@@ -61,12 +69,20 @@ function generateRemoteMediaPlugin(config) {
   }
 
   const pluginContent = `<?php
+/**
+ * Plugin para servir medios desde dominio remoto
+ */
 add_filter('wp_get_attachment_url', function($url) {
-  return str_replace(home_url('/wp-content/uploads'), '${remoteUrl}', $url);
+  return str_replace(
+    home_url('/wp-content/uploads'),
+    '${remoteUrl}',
+    $url
+  );
 });
 `;
+
   fs.writeFileSync(remoteMediaPluginPath, pluginContent);
-  console.log("🌐 Remote media plugin generated in mu-plugins");
+  console.log("🌐 Remote media serving plugin generated in mu-plugins");
 }
 
 module.exports = async function () {
@@ -79,12 +95,8 @@ module.exports = async function () {
   const manager = config.containerManager || "docker";
   const container = require(`../helpers/${manager}.js`);
 
-  const wpContainerName = `juzt-wp-${slugify(config.name, { lower: true })}-${
-    config.server.port
-  }`;
-  const dbContainerName = `juzt-db-${slugify(config.name, { lower: true })}-${
-    config.server.port
-  }`;
+  const wpContainerName = `juzt-wp-${slugify(config.name, { lower: true })}-${config.server.port}`;
+  const dbContainerName = `juzt-db-${slugify(config.name, { lower: true })}-${config.server.port}`;
 
   // 🌐 Crear red compartida si no existe
   try {
@@ -109,27 +121,17 @@ module.exports = async function () {
   if (config.useLocalDatabase) {
     if (!container.checkContainerExists(dbContainerName)) {
       console.log("🗄️ Starting local database container...");
-
-      const dbEnv = [
-        `-e MYSQL_ROOT_PASSWORD=${config.localDatabase.rootPassword}`,
-        `-e MYSQL_DATABASE=${config.database.name}`,
-      ];
-
-      // Solo añadir MYSQL_USER/MYSQL_PASSWORD si no es root
-      if (config.database.user && config.database.user !== "root") {
-        dbEnv.push(`-e MYSQL_USER=${config.database.user}`);
-        dbEnv.push(`-e MYSQL_PASSWORD=${config.database.password}`);
-      }
-
       const dbCmd = [
         `${manager} run -d`,
         `--name ${dbContainerName}`,
         `--network juzt-net`,
-        ...dbEnv,
+        `-e MYSQL_ROOT_PASSWORD=${config.localDatabase.rootPassword}`,
+        `-e MYSQL_DATABASE=${config.database.name}`,
+        `-e MYSQL_USER=${config.database.user}`,
+        `-e MYSQL_PASSWORD=${config.database.password}`,
         `-p ${config.localDatabase.port}:3306`,
-        `${config.localDatabase.image}`,
+        `${config.localDatabase.image}`
       ].join(" ");
-
       execSync(dbCmd, { stdio: "inherit" });
       console.log(`✅ DB container ${dbContainerName} started`);
     } else {
@@ -137,17 +139,13 @@ module.exports = async function () {
     }
   }
 
-  const dbHost = config.useLocalDatabase
-    ? dbContainerName
-    : config.database.host;
+  const dbHost = config.useLocalDatabase ? dbContainerName : config.database.host;
 
   generateWpConfig(config, dbHost);
   generateRemoteMediaPlugin(config);
 
   if (container.checkContainerExists(wpContainerName)) {
-    console.log(
-      `⚠️ Container ${wpContainerName} already exists. Use 'juzt-cli down' to remove it.`
-    );
+    console.log(`⚠️ Container ${wpContainerName} already exists. Use 'juzt-cli down' to remove it.`);
     return;
   }
 
@@ -156,14 +154,12 @@ module.exports = async function () {
     `--name ${wpContainerName}`,
     `--network juzt-net`,
     `-p ${config.server.port}:80`,
-    `-v "${wpContentPath}:/var/www/html/wp-content"`,
-    `-v "${wpConfigPath}:/var/www/html/wp-config.php"`,
-    `juzt-wordpress:dev`,
+    `-v ${wpContentPath}:/var/www/html/wp-content`,
+    `-v ${wpConfigPath}:/var/www/html/wp-config.php`,
+    `juzt-wordpress:dev`
   ].join(" ");
 
   console.log("🚀 Starting WordPress environment...");
   execSync(wpCmd, { stdio: "inherit" });
-  console.log(
-    `✅ Container ${wpContainerName} started at http://localhost:${config.server.port}`
-  );
+  console.log(`✅ Container ${wpContainerName} started at http://localhost:${config.server.port}`);
 };

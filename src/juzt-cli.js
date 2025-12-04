@@ -8,19 +8,13 @@ const runUp = require("./command/up");
 const runDown = require("./command/down");
 
 program
-    .command("init")
-    .description("Generate juzt.config.js configuration file")
-    .action(runInit);
+  .command("init")
+  .description("Generate juzt.config.js configuration file")
+  .action(runInit);
 
-program
-    .command("up")
-    .description("Start dev server")
-    .action(runUp);
+program.command("up").description("Start dev server").action(runUp);
 
-program
-    .command("down")
-    .description("Cancel dev server")
-    .action(runDown);
+program.command("down").description("Cancel dev server").action(runDown);
 
 program
   .command("db:pull")
@@ -28,9 +22,27 @@ program
   .action(require("./command/db-pull"));
 
 program
+  .command("new")
+  .description("Inicializa un proyecto WordPress limpio (sin clonar DB)")
+  .action(require("./command/new"));
+
+const theme = program.command("theme").description("Gestión de temas");
+
+theme
+  .command("up")
+  .requiredOption("--name <themeName>", "Nombre del tema local")
+  .action(async (options) => {
+    const themeUp = require("../src/command/theme-up.js");
+    await themeUp(options);
+  });
+
+program
   .command("uploads:pull")
   .description("Sync a remote folder within WordPress")
-  .requiredOption("--path <path>", "Relative path inside WordPress (e.g., wp-content/plugins/)")
+  .requiredOption(
+    "--path <path>",
+    "Relative path inside WordPress (e.g., wp-content/plugins/)"
+  )
   .option("--method <method>", "Sync method: rsync or scp", "rsync")
   .action((options) => require("./command/uploads-pull")(options));
 
