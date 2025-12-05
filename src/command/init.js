@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const inquirer = require("inquirer");
 const slugify = require("slugify");
+const extract = require("extract-zip");
 const { execSync } = require("child_process");
 
 const configPath = path.join(process.cwd(), "juzt.config.js");
@@ -150,33 +151,32 @@ async function runInit() {
     localDatabase:
       !answers.newProject && answers.useLocalDatabase
         ? {
-            image: answers.localDbImage,
-            rootPassword: answers.localDbPassword,
-            port: parseInt(answers.localDbPort),
-          }
+          image: answers.localDbImage,
+          rootPassword: answers.localDbPassword,
+          port: parseInt(answers.localDbPort),
+        }
         : {
-            image: "mysql:5.7",
-            rootPassword: "root",
-            port: 3306,
-          },
+          image: "mysql:5.7",
+          rootPassword: "root",
+          port: 3306,
+        },
     // 👇 Siempre generamos database con datos coherentes
     database: answers.newProject
       ? {
-          host: `juzt-db-${slugify(answers.name, { lower: true })}-${
-            answers.port
+        host: `juzt-db-${slugify(answers.name, { lower: true })}-${answers.port
           }`,
-          name: "wordpress",
-          user: "wpuser", // usuario no root
-          password: "wppass", // contraseña para ese usuario
-          tablePrefix: answers.tablePrefix,
-        }
+        name: "wordpress",
+        user: "wpuser", // usuario no root
+        password: "wppass", // contraseña para ese usuario
+        tablePrefix: answers.tablePrefix,
+      }
       : {
-          host: answers.db_host,
-          name: answers.db_name,
-          user: answers.db_user,
-          password: answers.db_password,
-          tablePrefix: answers.tablePrefix,
-        },
+        host: answers.db_host,
+        name: answers.db_name,
+        user: answers.db_user,
+        password: answers.db_password,
+        tablePrefix: answers.tablePrefix,
+      },
     server: {
       port: parseInt(answers.port),
     },
@@ -185,13 +185,13 @@ async function runInit() {
       : undefined,
     ssh: answers.useSSH
       ? {
-          host: answers.ssh_host,
-          port: parseInt(answers.ssh_port),
-          user: answers.ssh_user,
-          password: answers.ssh_password,
-          privateKeyPath: answers.ssh_key || null,
-          remoteWpPath: answers.remote_wp_path || null,
-        }
+        host: answers.ssh_host,
+        port: parseInt(answers.ssh_port),
+        user: answers.ssh_user,
+        password: answers.ssh_password,
+        privateKeyPath: answers.ssh_key || null,
+        remoteWpPath: answers.remote_wp_path || null,
+      }
       : undefined,
   };
 
@@ -207,27 +207,26 @@ async function runInit() {
   // Descargar WordPress en versión específica
   console.log(`⬇️ Descargando WordPress versión ${config.wp_version}...`);
   try {
-    const wpZip = path.join(
-      process.cwd(),
-      `wordpress-${config.wp_version}.zip`
-    );
+    const wpZip = path.join(process.cwd(), `wordpress-${config.wp_version}.zip`);
     const url = `https://wordpress.org/wordpress-${config.wp_version}.zip`;
 
-    execSync(`curl -o "${wpZip}" ${url}`, { stdio: "inherit" });
-    execSync(`unzip "${wpZip}" -d "${process.cwd()}"`, { stdio: "inherit" });
-    execSync(`rm "${wpZip}"`);
-    execSync(
-      `mv "${path.join(
-        process.cwd(),
-        "wordpress/wp-content"
-      )}" "${process.cwd()}/wp-content"`
+    execSync(`curl -L -o "${wpZip}" ${url}`, { stdio: "inherit" });
+
+    // Usar extract-zip en lugar de unzip
+    await extract(wpZip, { dir: process.cwd() });
+
+    fs.renameSync(
+      path.join(process.cwd(), "wordpress/wp-content"),
+      path.join(process.cwd(), "wp-content")
     );
-    execSync(`rm -rf "${path.join(process.cwd(), "wordpress")}"`);
+    fs.rmSync(path.join(process.cwd(), "wordpress"), { recursive: true, force: true });
+    fs.rmSync(wpZip);
 
     console.log(`✅ wp-content instalado en la carpeta actual`);
   } catch (err) {
     console.error("❌ Error descargando WordPress:", err.message);
   }
+
 
   // Generar wp-config.php básico
   console.log("⚙️ Generando wp-config.php...");
